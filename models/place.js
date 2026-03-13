@@ -2,8 +2,6 @@ const mongoose = require("mongoose");
 const Review = require("./review");
 const Schema = mongoose.Schema;
 
-// https://res.cloudinary.com/douqbebwk/image/upload/w_300/v1600113904/YelpCamp/gxgle1ovzd2f3dgcpass.png
-
 const ImageSchema = new Schema({
   url: String,
   filename: String,
@@ -15,14 +13,19 @@ ImageSchema.virtual("thumbnail").get(function () {
 
 const opts = { toJSON: { virtuals: true } };
 
-const CampgroundSchema = new Schema(
+const PlaceSchema = new Schema(
   {
     title: String,
     images: [ImageSchema],
-    price: Number,
+    entryFee: Number, // Replaced 'price'
+    category: {
+      type: String,
+      enum: ["Food", "Study", "Views", "Cafes", "Chill spots"],
+      required: true,
+    },
+    bestTime: String, // e.g., '6:30 PM' or 'Late Night'
     description: String,
     location: String,
-    // ↓↓↓ add this code ↓↓↓
     geometry: {
       type: {
         type: String,
@@ -34,7 +37,6 @@ const CampgroundSchema = new Schema(
         required: true,
       },
     },
-    // ↑↑↑ add this code ↑↑↑
     author: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -46,19 +48,20 @@ const CampgroundSchema = new Schema(
       },
     ],
   },
-  opts
+  opts,
 );
 
-CampgroundSchema.virtual("properties.popUpMarkup").get(function () {
+// Updated the popup link to point to /places instead of /campgrounds
+PlaceSchema.virtual("properties.popUpMarkup").get(function () {
   return `
     <strong>
-        <a href="/campgrounds/${this._id}">${this.title}</a>
+        <a href="/places/${this._id}">${this.title}</a>
     </strong>
     <p>${this.description.substring(0, 20)}...</p>
     `;
 });
 
-CampgroundSchema.post("findOneAndDelete", async function (doc) {
+PlaceSchema.post("findOneAndDelete", async function (doc) {
   if (doc) {
     await Review.deleteMany({
       _id: {
@@ -68,4 +71,5 @@ CampgroundSchema.post("findOneAndDelete", async function (doc) {
   }
 });
 
-module.exports = mongoose.model("Campground", CampgroundSchema);
+// Changed the model name from Campground to Place
+module.exports = mongoose.model("Place", PlaceSchema);

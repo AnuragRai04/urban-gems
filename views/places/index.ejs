@@ -1,0 +1,58 @@
+<% layout('layouts/boilerplate')%>
+<div id="map" style="width: 100%; height: 500px"></div>
+<div id="cluster-map"></div>
+<div class="container mt-3">
+  <h1>All Hidden Gems</h1>
+
+  <% for (let place of places){%>
+  <div class="card mb-3">
+    <div class="row">
+      <div class="col-md-4">
+        <%if(place.images.length) {%>
+        <img class="img-fluid" alt="" src="<%=place.images[0].url%>" />
+        <% }else {%>
+        <img
+          class="img-fluid"
+          alt=""
+          src="https://res.cloudinary.com/douqbebwk/image/upload/v1600103881/YelpCamp/lz8jjv2gyynjil7lswf4.png"
+        />
+        <% } %>
+      </div>
+      <div class="col-md-8">
+        <div class="card-body">
+          <h5 class="card-title"><%= place.title %></h5>
+          
+          <span class="badge bg-secondary mb-2"><%= place.category %></span>
+
+          <p class="card-text"><%= place.description %></p>
+          <p class="card-text">
+            <small class="text-muted"><%= place.location%></small>
+          </p>
+          <a class="btn btn-primary" href="/places/<%=place._id%>"
+            >View <%=place.title%></a
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+  <% }%>
+</div>
+<script>
+  const maptilerApiKey = "<%= process.env.MAPTILER_API_KEY %>";
+
+  // Changed variable name to places and updated the map function logic
+  const places = {
+      type: "FeatureCollection",
+      features: <%- JSON.stringify(places.map(p => {
+          return {
+              type: "Feature",
+              geometry: p.geometry,
+              properties: {
+                  popUpMarkup: p.properties.popUpMarkup
+              }
+          }
+      })) %>
+  };
+</script>
+
+<script src="/javascripts/clusterMap.js"></script>

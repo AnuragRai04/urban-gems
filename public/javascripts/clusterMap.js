@@ -3,27 +3,27 @@ maptilersdk.config.apiKey = maptilerApiKey;
 const map = new maptilersdk.Map({
   container: "map",
   style: maptilersdk.MapStyle.BRIGHT,
-  center: [-103.59179687498357, 40.66995747013945],
-  zoom: 3,
+  // Centered over India instead of the US
+  center: [78.9629, 20.5937],
+  zoom: 4, // Adjusted zoom to show the whole country comfortably
 });
 
 map.on("load", function () {
-  map.addSource("campgrounds", {
+  // Swapped 'campgrounds' for 'places'
+  map.addSource("places", {
     type: "geojson",
-    data: campgrounds,
+    data: places,
     cluster: true,
-    clusterMaxZoom: 14, // Max zoom to cluster points on
-    clusterRadius: 50, // Radius of each cluster when clustering points (defaults to 50)
+    clusterMaxZoom: 14,
+    clusterRadius: 50,
   });
 
   map.addLayer({
     id: "clusters",
     type: "circle",
-    source: "campgrounds",
+    source: "places", // Updated source
     filter: ["has", "point_count"],
     paint: {
-      // Use step expressions (https://docs.maptiler.com/gl-style-specification/expressions/#step)
-      // with three steps to implement three types of circles:
       "circle-color": [
         "step",
         ["get", "point_count"],
@@ -40,7 +40,7 @@ map.on("load", function () {
   map.addLayer({
     id: "cluster-count",
     type: "symbol",
-    source: "campgrounds",
+    source: "places", // Updated source
     filter: ["has", "point_count"],
     layout: {
       "text-field": "{point_count_abbreviated}",
@@ -52,7 +52,7 @@ map.on("load", function () {
   map.addLayer({
     id: "unclustered-point",
     type: "circle",
-    source: "campgrounds",
+    source: "places", // Updated source
     filter: ["!", ["has", "point_count"]],
     paint: {
       "circle-color": "#11b4da",
@@ -62,14 +62,13 @@ map.on("load", function () {
     },
   });
 
-  // inspect a cluster on click
   map.on("click", "clusters", async (e) => {
     const features = map.queryRenderedFeatures(e.point, {
       layers: ["clusters"],
     });
     const clusterId = features[0].properties.cluster_id;
     const zoom = await map
-      .getSource("campgrounds")
+      .getSource("places") // Updated source
       .getClusterExpansionZoom(clusterId);
     map.easeTo({
       center: features[0].geometry.coordinates,
@@ -77,17 +76,10 @@ map.on("load", function () {
     });
   });
 
-  // When a click event occurs on a feature in
-  // the unclustered-point layer, open a popup at
-  // the location of the feature, with
-  // description HTML from its properties.
   map.on("click", "unclustered-point", function (e) {
     const { popUpMarkup } = e.features[0].properties;
     const coordinates = e.features[0].geometry.coordinates.slice();
 
-    // Ensure that if the map is zoomed out such that
-    // multiple copies of the feature are visible, the
-    // popup appears over the copy being pointed to.
     while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
       coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
     }

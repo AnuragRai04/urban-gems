@@ -1,0 +1,93 @@
+<% layout('layouts/boilerplate')%>
+<div class="row">
+    <h1 class="text-center">Edit Spot</h1>
+    <div class="col-md-6 offset-md-3">
+        <form action="/places/<%=place._id%>?_method=PUT" method="POST" novalidate class="validated-form"
+            enctype="multipart/form-data">
+            <div class="mb-3">
+                <label class="form-label" for="title">Title</label>
+                <input class="form-control" type="text" id="title" name="place[title]"
+                    value="<%=place.title %>" required>
+                <div class="valid-feedback">
+                    Looks good!
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="location">Location</label>
+                <input class="form-control" type="text" id="location" name="place[location]"
+                    value="<%=place.location %>" required>
+                <div class="valid-feedback">
+                    Looks good!
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="category">Category</label>
+                <select class="form-select" id="category" name="place[category]" required>
+                    <option value="Food" <%= place.category === 'Food' ? 'selected' : '' %>>Food</option>
+                    <option value="Study" <%= place.category === 'Study' ? 'selected' : '' %>>Study</option>
+                    <option value="Views" <%= place.category === 'Views' ? 'selected' : '' %>>Views</option>
+                    <option value="Cafes" <%= place.category === 'Cafes' ? 'selected' : '' %>>Cafes</option>
+                    <option value="Chill spots" <%= place.category === 'Chill spots' ? 'selected' : '' %>>Chill spots</option>
+                </select>
+                <div class="valid-feedback">
+                    Looks good!
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="bestTime">Best Time to Visit</label>
+                <input class="form-control" type="text" id="bestTime" name="place[bestTime]"
+                    value="<%=place.bestTime %>" required>
+                <div class="valid-feedback">
+                    Looks good!
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="entryFee">Entry Fee</label>
+                <div class="input-group">
+                    <span class="input-group-text" id="price-label">₹</span>
+                    <input type="number" class="form-control" id="entryFee" placeholder="0 if free" aria-label="entry fee"
+                        aria-describedby="price-label" name="place[entryFee]" value="<%=place.entryFee %>"
+                        required min="0">
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label" for="description">Description</label>
+                <textarea class="form-control" type="text" id="description" name="place[description]"
+                    required><%= place.description%></textarea>
+                <div class="valid-feedback">
+                    Looks good!
+                </div>
+            </div>
+            <div class="mb-3">
+                <div class="form-file custom-file">
+                    <input type="file" class="form-file-input" id="image" name="image" multiple>
+                    <label class="form-file-label" for="image">
+                        <span class="form-file-text custom-file-label">Add more image(s)...</span>
+                        <span class="form-file-button">Browse</span>
+                    </label>
+                </div>
+            </div>
+            <div class="mb-3">
+                <% place.images.forEach(function(img, i) {  %>
+                <img src="<%=img.thumbnail %>" class="img-thumbnail" alt="">
+                <div class="form-check-inline">
+                    <input type="checkbox" id="image-<%=i%>" name="deleteImages[]" value="<%=img.filename%>">
+                </div>
+                <label for="image-<%=i%>">Delete?</label>
+                <% })%>
+            </div>
+            <div class="mb-3">
+                <button class="btn btn-info">Update Spot</button>
+            </div>
+        </form>
+        <a href="/places/<%= place._id%>">Back To Spot</a>
+
+    </div>
+</div>

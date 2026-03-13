@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router({ mergeParams: true });
 const { validateReview, isLoggedIn, isReviewAuthor } = require("../middleware");
-const Campground = require("../models/campground");
+const Place = require("../models/place"); // <--- Fixed the broken import!
 const Review = require("../models/review");
 const reviews = require("../controllers/reviews");
 const ExpressError = require("../utils/ExpressError");
@@ -13,7 +13,7 @@ router.delete(
   "/:reviewId",
   isLoggedIn,
   isReviewAuthor,
-  catchAsync(reviews.deleteReview)
+  catchAsync(reviews.deleteReview),
 );
 
 module.exports = router;
