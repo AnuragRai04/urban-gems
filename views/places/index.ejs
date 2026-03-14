@@ -1,58 +1,84 @@
 <% layout('layouts/boilerplate')%>
 <div id="map" style="width: 100%; height: 500px"></div>
 <div id="cluster-map"></div>
-<div class="container mt-3">
-  <h1>All Hidden Gems</h1>
+<div class="container mt-4 mb-5">
+    <h1 class="mb-4 text-center">All Hidden Gems</h1>
 
-  <% for (let place of places){%>
-  <div class="card mb-3">
-    <div class="row">
-      <div class="col-md-4">
-        <%if(place.images.length) {%>
-        <img class="img-fluid" alt="" src="<%=place.images[0].url%>" />
-        <% }else {%>
-        <img
-          class="img-fluid"
-          alt=""
-          src="https://res.cloudinary.com/douqbebwk/image/upload/v1600103881/YelpCamp/lz8jjv2gyynjil7lswf4.png"
-        />
-        <% } %>
-      </div>
-      <div class="col-md-8">
-        <div class="card-body">
-          <h5 class="card-title"><%= place.title %></h5>
-          
-          <span class="badge bg-secondary mb-2"><%= place.category %></span>
-
-          <p class="card-text"><%= place.description %></p>
-          <p class="card-text">
-            <small class="text-muted"><%= place.location%></small>
-          </p>
-          <a class="btn btn-primary" href="/places/<%=place._id%>"
-            >View <%=place.title%></a
-          >
+    <div class="row mb-5">
+        <div class="col-md-8 offset-md-2">
+            <form action="/places" method="GET" class="d-flex align-items-center bg-light p-3 rounded shadow-sm border">
+                <div class="me-3 flex-grow-1">
+                    <select name="category" class="form-select">
+                        <option value="All" <%= (typeof category !== 'undefined' && category === 'All') ? 'selected' : '' %>>All Categories</option>
+                        <option value="Food" <%= (typeof category !== 'undefined' && category === 'Food') ? 'selected' : '' %>>Food</option>
+                        <option value="Views" <%= (typeof category !== 'undefined' && category === 'Views') ? 'selected' : '' %>>Views</option>
+                        <option value="Study" <%= (typeof category !== 'undefined' && category === 'Study') ? 'selected' : '' %>>Study</option>
+                        <option value="Chill spots" <%= (typeof category !== 'undefined' && category === 'Chill spots') ? 'selected' : '' %>>Chill spots</option>
+                    </select>
+                </div>
+                <div class="me-3 flex-grow-1">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">₹</span>
+                        <input type="number" class="form-control border-start-0" name="maxFee" placeholder="Max Fee" value="<%= typeof maxFee !== 'undefined' ? maxFee : '' %>" min="0">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-dark fw-bold px-4">Filter</button>
+                <a href="/places" class="btn btn-outline-secondary ms-2">Reset</a>
+            </form>
         </div>
-      </div>
     </div>
-  </div>
-  <% }%>
+
+    <% if(places.length === 0) { %>
+        <div class="alert alert-warning text-center" role="alert">
+            No hidden gems found matching those filters! Try adjusting your search.
+        </div>
+    <% } %>
+
+    <% for (let place of places){%>
+    <div class="card mb-3 shadow-sm border-0">
+        <div class="row g-0">
+            <div class="col-md-4">
+                <%if(place.images.length) {%>
+                <img class="img-fluid rounded-start" style="height: 250px; width: 100%; object-fit: cover;" alt="<%= place.title %>" src="<%=place.images[0].url%>" />
+                <% }else {%>
+                <img class="img-fluid rounded-start" style="height: 250px; width: 100%; object-fit: cover;" alt="Default Image"
+                    src="https://res.cloudinary.com/douqbebwk/image/upload/v1600103881/YelpCamp/lz8jjv2gyynjil7lswf4.png" />
+                <% } %>
+            </div>
+            <div class="col-md-8">
+                <div class="card-body d-flex flex-column h-100">
+                    <h5 class="card-title fw-bold"><%= place.title %></h5>
+                    
+                    <div>
+                        <span class="badge bg-secondary mb-2"><%= place.category %></span>
+                    </div>
+
+                    <p class="card-text text-muted"><%= place.description.substring(0, 100) %>...</p>
+                    <p class="card-text mt-auto">
+                        <small class="text-muted"><%= place.location%></small>
+                    </p>
+                    <a class="btn btn-dark w-100 mt-2" href="/places/<%=place._id%>">View <%=place.title%></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% }%>
 </div>
 <script>
-  const maptilerApiKey = "<%= process.env.MAPTILER_API_KEY %>";
+    const maptilerApiKey = "<%= process.env.MAPTILER_API_KEY %>";
 
-  // Changed variable name to places and updated the map function logic
-  const places = {
-      type: "FeatureCollection",
-      features: <%- JSON.stringify(places.map(p => {
-          return {
-              type: "Feature",
-              geometry: p.geometry,
-              properties: {
-                  popUpMarkup: p.properties.popUpMarkup
-              }
-          }
-      })) %>
-  };
+    const places = {
+        type: "FeatureCollection",
+        features: <%- JSON.stringify(places.map(p => {
+            return {
+                type: "Feature",
+                geometry: p.geometry,
+                properties: {
+                    popUpMarkup: p.properties.popUpMarkup
+                }
+            }
+        })) %>
+    };
 </script>
 
 <script src="/javascripts/clusterMap.js"></script>

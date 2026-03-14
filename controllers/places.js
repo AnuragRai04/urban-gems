@@ -4,10 +4,20 @@ const maptilerClient = require("@maptiler/client");
 maptilerClient.config.apiKey = process.env.MAPTILER_API_KEY;
 
 module.exports.index = async (req, res) => {
-  const places = await Place.find({}).populate("popupText");
-  res.render("places/index", { places }); // Updated render path
-};
+  const { category, maxFee } = req.query;
+  let query = {};
 
+  if (category && category !== "All") {
+    query.category = category;
+  }
+
+  if (maxFee) {
+    query.entryFee = { $lte: Number(maxFee) };
+  }
+
+  const places = await Place.find(query).populate("popupText");
+  res.render("places/index", { places, category, maxFee });
+};
 module.exports.renderNewForm = (req, res) => {
   res.render("places/new"); // Updated render path
 };

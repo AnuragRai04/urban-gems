@@ -15,16 +15,12 @@ const LocalStrategy = require("passport-local");
 const User = require("./models/user");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
+
 const userRoutes = require("./routes/users");
-const placeRoutes = require("./routes/places"); // Updated requirement
-const reviewRoutes = require("./routes/reviews");
+const placeRoutes = require("./routes/places"); // Replaced campgrounds
+const reviewRoutes = require("./routes/reviews"); // Replaced campgrounds
 
-const MongoDBStore = require("connect-mongo")(session);
-
-// Updated local database name to urban-gems
-const dbUrl = process.env.DB_URL || "mongodb://localhost:27017/urban-gems";
-
-mongoose.connect(dbUrl, {
+mongoose.connect("mongodb://localhost:27017/urban-gems", {
   useNewUrlParser: true,
   useCreateIndex: true,
   useUnifiedTopology: true,
@@ -51,22 +47,10 @@ app.use(
     replaceWith: "_",
   }),
 );
-const secret = process.env.SECRET || "thisshouldbeabettersecret!";
-
-const store = new MongoDBStore({
-  url: dbUrl,
-  secret,
-  touchAfter: 24 * 60 * 60,
-});
-
-store.on("error", function (e) {
-  console.log("SESSION STORE ERROR", e);
-});
 
 const sessionConfig = {
-  store,
   name: "session",
-  secret,
+  secret: "thisshouldbeabettersecret!",
   resave: false,
   saveUninitialized: true,
   cookie: {
@@ -79,59 +63,7 @@ const sessionConfig = {
 
 app.use(session(sessionConfig));
 app.use(flash());
-app.use(helmet());
-
-// ===============================================
-//  UPDATED SECURITY POLICY FOR MAPTILER
-// ===============================================
-
-const scriptSrcUrls = [
-  "https://stackpath.bootstrapcdn.com",
-  "https://api.tiles.mapbox.com",
-  "https://api.mapbox.com",
-  "https://kit.fontawesome.com",
-  "https://cdnjs.cloudflare.com",
-  "https://cdn.jsdelivr.net",
-  "https://cdn.maptiler.com/",
-];
-const styleSrcUrls = [
-  "https://kit-free.fontawesome.com",
-  "https://stackpath.bootstrapcdn.com",
-  "https://api.mapbox.com",
-  "https://api.tiles.mapbox.com",
-  "https://fonts.googleapis.com",
-  "https://use.fontawesome.com",
-  "https://cdn.maptiler.com/",
-];
-const connectSrcUrls = [
-  "https://api.mapbox.com",
-  "https://*.tiles.mapbox.com",
-  "https://events.mapbox.com",
-  "https://api.maptiler.com/",
-];
-const fontSrcUrls = [];
-app.use(
-  helmet.contentSecurityPolicy({
-    directives: {
-      defaultSrc: [],
-      connectSrc: ["'self'", ...connectSrcUrls],
-      scriptSrc: ["'unsafe-inline'", "'self'", ...scriptSrcUrls],
-      styleSrc: ["'self'", "'unsafe-inline'", ...styleSrcUrls],
-      workerSrc: ["'self'", "blob:"],
-      childSrc: ["blob:"],
-      objectSrc: [],
-      imgSrc: [
-        "'self'",
-        "blob:",
-        "data:",
-        "https://res.cloudinary.com/douqbebwk/", // Kept your specific Cloudinary account ID
-        "https://images.unsplash.com",
-        "https://api.maptiler.com/",
-      ],
-      fontSrc: ["'self'", ...fontSrcUrls],
-    },
-  }),
-);
+app.use(helmet({ contentSecurityPolicy: false }));
 
 app.use(passport.initialize());
 app.use(passport.session());
@@ -147,9 +79,10 @@ app.use((req, res, next) => {
   next();
 });
 
+// Using the new /places routes!
 app.use("/", userRoutes);
-app.use("/places", placeRoutes); // Updated prefix
-app.use("/places/:id/reviews", reviewRoutes); // Updated prefix
+app.use("/places", placeRoutes);
+app.use("/places/:id/reviews", reviewRoutes);
 
 app.get("/", (req, res) => {
   res.render("home");
@@ -159,13 +92,17 @@ app.all("*", (req, res, next) => {
   next(new ExpressError("Page Not Found", 404));
 });
 
+// The Error Handler!
 app.use((err, req, res, next) => {
   const { statusCode = 500 } = err;
   if (!err.message) err.message = "Oh No, Something Went Wrong!";
+
+  // THIS LOG WILL CATCH OUR BUG:
+  console.log("🚨 SERVER ERROR 🚨", err);
+
   res.status(statusCode).render("error", { err });
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Serving on port ${port}`);
+app.listen(3000, () => {
+  console.log("Serving on port 3000");
 });
