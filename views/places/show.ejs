@@ -1,15 +1,15 @@
 <% layout('layouts/boilerplate')%>
 <link rel="stylesheet" href="/stylesheets/stars.css">
-<div class="row">
-    <div class="col-6">
-        <div id="placeCarousel" class="carousel slide" data-ride="carousel">
+
+<div class="row mb-5">
+    <div class="col-md-6">
+        <div id="placeCarousel" class="carousel slide shadow-lg mb-4 rounded-4 overflow-hidden" data-ride="carousel" style="border: 4px solid white;">
             <div class="carousel-inner">
                 <% place.images.forEach((img, i) => {  %>
                 <div class="carousel-item <%= i === 0 ? 'active' : ''%>">
-                    <img src="<%= img.url%>" class="d-block w-100" alt="">
+                    <img src="<%= img.url%>" class="d-block w-100" style="height: 450px; object-fit: cover;" alt="">
                 </div>
                 <% }) %>
-
             </div>
             <% if(place.images.length > 1) {%>
             <a class="carousel-control-prev" href="#placeCarousel" role="button" data-slide="prev">
@@ -23,89 +23,94 @@
             <% } %>
         </div>
 
-        <div class="card mb-3">
+        <div class="card mb-3 shadow-sm border-0 bg-white p-2">
             <div class="card-body">
-                <h5 class="card-title"><%= place.title%></h5>
-                <p class="card-text"><%= place.description%></p>
+                <h1 class="display-5 mb-3" style="font-family: 'Playfair Display', serif; color: #1a252f;"><%= place.title%></h1>
+                <p class="card-text text-muted" style="font-style: italic; font-size: 1.1rem; line-height: 1.8;">"<%= place.description%>"</p>
             </div>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item text-muted"><%= place.location%></li>
-                <li class="list-group-item">Submitted by <%= place.author.username%></li>
-                
-                <li class="list-group-item"><strong>Category:</strong> <%= place.category%></li>
-                <li class="list-group-item"><strong>Best Time:</strong> <%= place.bestTime%></li>
-                
-                <li class="list-group-item">
-                    <%= place.entryFee === 0 ? 'Free Entry' : 'Entry Fee: ₹' + place.entryFee %>
-                </li>
+            
+            <div class="d-flex justify-content-between align-items-center px-4 py-3 border-top border-bottom bg-light">
+                <div class="text-center">
+                    <small class="text-uppercase text-muted d-block" style="letter-spacing: 1px; font-size: 0.7rem;">Category</small>
+                    <span class="fw-bold"><%= place.category%></span>
+                </div>
+                <div class="text-center border-start border-end px-4">
+                    <small class="text-uppercase text-muted d-block" style="letter-spacing: 1px; font-size: 0.7rem;">Entry Fee</small>
+                    <span class="fw-bold"><%= place.entryFee === 0 ? 'Complimentary' : '₹' + place.entryFee %></span>
+                </div>
+                <div class="text-center">
+                    <small class="text-uppercase text-muted d-block" style="letter-spacing: 1px; font-size: 0.7rem;">Best Time</small>
+                    <span class="fw-bold text-success"><%= place.bestTime%></span>
+                </div>
+            </div>
+
+            <ul class="list-group list-group-flush border-0 mt-2">
+                <li class="list-group-item bg-transparent border-0"><i class="text-muted">Located at:</i> <strong><%= place.location%></strong></li>
+                <li class="list-group-item bg-transparent border-0 text-muted"><small>Curated by <%= place.author.username%></small></li>
             </ul>
+
             <%  if( currentUser && place.author.equals(currentUser._id))  {%>
-            <div class="card-body">
-                <a class="card-link btn btn-info" href="/places/<%=place._id%>/edit">Edit</a>
-                <form class="d-inline" action="/places/<%=place._id%>?_method=DELETE" method="POST">
-                    <button class="btn btn-danger">Delete</button>
+            <div class="card-body border-top">
+                <a class="btn btn-outline-dark px-4" href="/places/<%=place._id%>/edit">Edit Details</a>
+                <form class="d-inline ms-2" action="/places/<%=place._id%>?_method=DELETE" method="POST">
+                    <button class="btn btn-outline-danger">Remove Spot</button>
                 </form>
             </div>
             <% } %>
-            <div class="card-footer text-muted">
-                2 days ago
-            </div>
         </div>
-
     </div>
-    <div class="col-6">
-        <div id="map" style="width: 100%; height: 300px;"></div>
 
-        <% if(currentUser){ %>
-        <h2>Leave a Review</h2>
-        <form action="/places/<%=place._id%>/reviews" method="POST" class="mb-3 validated-form" novalidate>
-            <fieldset class="starability-basic">
-                <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked
-                    aria-label="No rating." />
-                <input type="radio" id="first-rate1" name="review[rating]" value="1" />
-                <label for="first-rate1" title="Terrible">1 star</label>
-                <input type="radio" id="first-rate2" name="review[rating]" value="2" />
-                <label for="first-rate2" title="Not good">2 stars</label>
-                <input type="radio" id="first-rate3" name="review[rating]" value="3" />
-                <label for="first-rate3" title="Average">3 stars</label>
-                <input type="radio" id="first-rate4" name="review[rating]" value="4" />
-                <label for="first-rate4" title="Very good">4 stars</label>
-                <input type="radio" id="first-rate5" name="review[rating]" value="5" />
-                <label for="first-rate5" title="Amazing">5 stars</label>
-            </fieldset>
-            <div class="mb-3">
-                <label class="form-label" for="body">Review Text</label>
-                <textarea class="form-control" name="review[body]" id="body" cols="30" rows="3" required></textarea>
-                <div class="valid-feedback">
-                    Looks good!
+    <div class="col-md-6">
+        <div id="map" class="shadow-sm rounded-4 mb-4" style="width: 100%; height: 350px; border: 1px solid #ddd;"></div>
+
+        <div class="card shadow-sm border-0 p-4">
+            <% if(currentUser){ %>
+            <h3 class="mb-4">Guest Reviews</h3>
+            <form action="/places/<%=place._id%>/reviews" method="POST" class="mb-4 validated-form" novalidate>
+                <fieldset class="starability-basic">
+                    <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked aria-label="No rating." />
+                    <input type="radio" id="first-rate1" name="review[rating]" value="1" />
+                    <label for="first-rate1" title="Terrible">1 star</label>
+                    <input type="radio" id="first-rate2" name="review[rating]" value="2" />
+                    <label for="first-rate2" title="Not good">2 stars</label>
+                    <input type="radio" id="first-rate3" name="review[rating]" value="3" />
+                    <label for="first-rate3" title="Average">3 stars</label>
+                    <input type="radio" id="first-rate4" name="review[rating]" value="4" />
+                    <label for="first-rate4" title="Very good">4 stars</label>
+                    <input type="radio" id="first-rate5" name="review[rating]" value="5" />
+                    <label for="first-rate5" title="Amazing">5 stars</label>
+                </fieldset>
+                <div class="mb-3">
+                    <textarea class="form-control bg-light border-0" name="review[body]" id="body" cols="30" rows="3" placeholder="Describe your experience..." required></textarea>
                 </div>
-            </div>
-            <button class="btn btn-success">Submit</button>
-        </form>
-        <% } %>
-        <% for(let review of place.reviews) { %>
-        <div class="card mb-3 ">
-            <div class="card-body">
-                <h5 class="card-title"> <%= review.author.username%></h5>
-                <p class="starability-result" data-rating="<%=review.rating%>">
-                    Rated: <%= review.rating %> stars
-                </p>
-                <p class="card-text">Review: <%= review.body %></p>
-                <%  if( currentUser && review.author.equals(currentUser._id))  {%>
-                <form action="/places/<%=place._id%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
-                    <button class="btn btn-sm btn-danger">Delete</button>
-                </form>
+                <button class="btn btn-dark w-100">Post Review</button>
+            </form>
+            <hr>
+            <% } %>
+
+            <div class="review-scroll" style="max-height: 400px; overflow-y: auto;">
+                <% for(let review of place.reviews) { %>
+                <div class="mb-3 p-3 bg-light rounded shadow-sm">
+                    <div class="d-flex justify-content-between">
+                        <h6 class="fw-bold mb-1"><%= review.author.username%></h6>
+                        <p class="starability-result" data-rating="<%=review.rating%>"></p>
+                    </div>
+                    <p class="card-text text-muted small"><%= review.body %></p>
+                    <%  if( currentUser && review.author.equals(currentUser._id))  {%>
+                    <form action="/places/<%=place._id%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
+                        <button class="btn btn-sm text-danger p-0 border-0 bg-transparent" style="font-size: 0.7rem;">Delete Review</button>
+                    </form>
+                    <% } %>
+                </div>
                 <% } %>
             </div>
         </div>
-        <% } %>
     </div>
 </div>
 
-<%-"<script>"%>
-const maptilerApiKey = '<%- process.env.MAPTILER_API_KEY %>';
-// Changed variable from campground to place
-const place = <%- JSON.stringify(place) %>; 
-<%-"</script>"%>
+<script>
+    const maptilerApiKey = '<%- process.env.MAPTILER_API_KEY %>';
+    const place = <%- JSON.stringify(place) %>; 
+</script>
 
 <script src="/javascripts/showPageMap.js"></script>

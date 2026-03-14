@@ -3,7 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>UrbanGems</title>
+    <title>UrbanGems | Discover the Hidden</title>
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Poppins:wght@300;400;600&display=swap"
+      rel="stylesheet"
+    />
 
     <link
       rel="stylesheet"
@@ -19,6 +24,57 @@
     />
 
     <link rel="stylesheet" href="/stylesheets/app.css" />
+
+    <style>
+      :root {
+        --grand-gold: #d4af37;
+        --estate-blue: #1a252f;
+        --parchment: #fcfaf2;
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: var(--parchment);
+        color: #333;
+      }
+
+      h1,
+      h2,
+      h3,
+      .navbar-brand,
+      .card-title {
+        font-family: "Playfair Display", serif;
+        font-weight: 700;
+      }
+
+      /* The European House/Estate "Arch" feel */
+      .card {
+        border: none;
+        border-radius: 15px; /* Softer, elegant corners */
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+      }
+
+      .navbar {
+        background-color: var(--estate-blue) !important;
+        border-bottom: 3px solid var(--grand-gold);
+        padding: 1rem 0;
+      }
+
+      .btn-primary,
+      .btn-dark {
+        background-color: var(--estate-blue);
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+      }
+
+      .btn-primary:hover {
+        background-color: var(--grand-gold);
+        transform: translateY(-2px);
+      }
+    </style>
   </head>
 
   <body class="d-flex flex-column vh-100">
