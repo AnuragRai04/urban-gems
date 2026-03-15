@@ -19,6 +19,15 @@ const mongoSanitize = require("express-mongo-sanitize");
 const userRoutes = require("./routes/users");
 const placeRoutes = require("./routes/places"); // Replaced campgrounds
 const reviewRoutes = require("./routes/reviews"); // Replaced campgrounds
+const dbUrl = process.env.DB_URL || "mongodb://localhost:27017/urban-gems";
+
+mongoose.connect(dbUrl);
+
+const db = mongoose.connection;
+db.on("error", console.error.bind(console, "connection error:"));
+db.once("open", () => {
+  console.log("Database connected to Cloud Atlas");
+});
 
 mongoose.connect("mongodb://localhost:27017/urban-gems", {
   useNewUrlParser: true,
@@ -103,6 +112,7 @@ app.use((err, req, res, next) => {
   res.status(statusCode).render("error", { err });
 });
 
-app.listen(3000, () => {
-  console.log("Serving on port 3000");
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Serving on port ${port}`);
 });
