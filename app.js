@@ -17,19 +17,13 @@ const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
 
 const userRoutes = require("./routes/users");
-const placeRoutes = require("./routes/places"); // Replaced campgrounds
-const reviewRoutes = require("./routes/reviews"); // Replaced campgrounds
+const placeRoutes = require("./routes/places");
+const reviewRoutes = require("./routes/reviews");
+
+// The unified, clean database connection
 const dbUrl = process.env.DB_URL || "mongodb://localhost:27017/urban-gems";
 
-mongoose.connect(dbUrl);
-
-const db = mongoose.connection;
-db.on("error", console.error.bind(console, "connection error:"));
-db.once("open", () => {
-  console.log("Database connected to Cloud Atlas");
-});
-
-mongoose.connect("mongodb://localhost:27017/urban-gems", {
+mongoose.connect(dbUrl, {
   useNewUrlParser: true,
   useCreateIndex: true,
   useUnifiedTopology: true,
@@ -39,7 +33,7 @@ mongoose.connect("mongodb://localhost:27017/urban-gems", {
 const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error:"));
 db.once("open", () => {
-  console.log("Database connected");
+  console.log("Database connected successfully!");
 });
 
 const app = express();
@@ -64,7 +58,7 @@ const sessionConfig = {
   saveUninitialized: true,
   cookie: {
     httpOnly: true,
-    // secure: true,
+    // secure: true, // We leave this commented out until you have a custom domain with HTTPS
     expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
     maxAge: 1000 * 60 * 60 * 24 * 7,
   },
