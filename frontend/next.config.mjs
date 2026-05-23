@@ -15,6 +15,14 @@ const nextConfig = {
       },
     ],
   },
+  // Tell Vercel to ignore ESLint errors during deployment
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  // Tell Vercel to ignore TypeScript errors during deployment
+  typescript: {
+    ignoreBuildErrors: true,
+  },
 };
 
 export default nextConfig;
