@@ -3,11 +3,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const express = require("express");
-const path = require("path");
 const mongoose = require("mongoose");
-const ejsMate = require("ejs-mate");
-const session = require("express-session");
-const flash = require("connect-flash");
 const ExpressError = require("./utils/ExpressError");
 const methodOverride = require("method-override");
 const passport = require("passport");
@@ -15,10 +11,6 @@ const LocalStrategy = require("passport-local");
 const User = require("./models/user");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
-
-const userRoutes = require("./routes/users");
-const placeRoutes = require("./routes/places");
-const reviewRoutes = require("./routes/reviews");
 
 // The unified, clean database connection
 const dbUrl = process.env.DB_URL || "mongodb://localhost:27017/urban-gems";
@@ -36,74 +28,48 @@ db.once("open", () => {
   console.log("Database connected successfully!");
 });
 
+// App is initialized here
 const app = express();
 
-app.engine("ejs", ejsMate);
-app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
-
+// Parse incoming data
 app.use(express.urlencoded({ extended: true }));
+// CRITICAL FIX: Required so Express can read the JSON data sent by Next.js
+app.use(express.json());
 app.use(methodOverride("_method"));
-app.use(express.static(path.join(__dirname, "public")));
-app.use(
-  mongoSanitize({
-    replaceWith: "_",
-  }),
-);
 
-const sessionConfig = {
-  name: "session",
-  secret: "thisshouldbeabettersecret!",
-  resave: false,
-  saveUninitialized: true,
-  cookie: {
-    httpOnly: true,
-    // secure: true, // We leave this commented out until you have a custom domain with HTTPS
-    expires: Date.now() + 1000 * 60 * 60 * 24 * 7,
-    maxAge: 1000 * 60 * 60 * 24 * 7,
-  },
-};
-
-app.use(session(sessionConfig));
-app.use(flash());
+// Security middleware
+app.use(mongoSanitize({ replaceWith: "_" }));
 app.use(helmet({ contentSecurityPolicy: false }));
 
+// Initialize Passport for Authentication
 app.use(passport.initialize());
-app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
-
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
-app.use((req, res, next) => {
-  res.locals.currentUser = req.user;
-  res.locals.success = req.flash("success");
-  res.locals.error = req.flash("error");
-  next();
-});
+// --- API ROUTES ---
+const apiAuth = require("./routes/api/auth");
+const apiPlaces = require("./routes/api/places");
 
-// Using the new /places routes!
-app.use("/", userRoutes);
-app.use("/places", placeRoutes);
-app.use("/places/:id/reviews", reviewRoutes);
+app.use("/api", apiAuth);
+app.use("/api/places", apiPlaces);
+// Note: Your reviews routes are now perfectly integrated inside apiPlaces!
+// -------------------------------------------------------
 
-app.get("/", (req, res) => {
-  res.render("home");
-});
-
+// 404 Handler for API
 app.all("*", (req, res, next) => {
-  next(new ExpressError("Page Not Found", 404));
+  next(new ExpressError("API Endpoint Not Found", 404));
 });
 
-// The Error Handler!
+// The Error Handler (Now sends pure JSON instead of trying to render EJS HTML!)
 app.use((err, req, res, next) => {
   const { statusCode = 500 } = err;
   if (!err.message) err.message = "Oh No, Something Went Wrong!";
 
-  // THIS LOG WILL CATCH OUR BUG:
+  // THIS LOG WILL CATCH ANY FUTURE BUGS:
   console.log("🚨 SERVER ERROR 🚨", err);
 
-  res.status(statusCode).render("error", { err });
+  res.status(statusCode).json({ error: err.message });
 });
 
 const port = process.env.PORT || 3000;
