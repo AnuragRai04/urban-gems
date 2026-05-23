@@ -2,13 +2,8 @@ import Link from "next/link";
 import { getCurrentUser } from "../../../lib/auth";
 import ReviewForm from "../../../components/ReviewForm";
 import { deletePlaceAction, deleteReviewAction } from "../../../app/actions";
+import { getPlace } from "../../../lib/api"; // <-- ADD THIS LINE
 
-// Fetch the single place from our Express API
-async function getPlace(id: string) {
-  const res = await fetch(`http://127.0.0.1:3000/api/places/${id}`, { cache: "no-store" });
-  if (!res.ok) throw new Error("Failed to fetch place");
-  return res.json();
-}
 
 export default async function PlaceDetails({ params }: { params: { id: string } }) {
   const place = await getPlace(params.id);
